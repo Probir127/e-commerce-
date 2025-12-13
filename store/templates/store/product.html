@@ -1,300 +1,325 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token }}">
-    <title>{{ product.name }} - RB Trading</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% block title %}{{ product.name }} - RB Trading{% endblock %}
 
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #e74c3c;
-        }
+{% block extra_css %}
+<style>
+    /* Product Detail Styles */
+    .product-container {
+        padding: 60px 0;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
-        }
+    .product-detail {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 60px;
+        margin-bottom: 80px;
+    }
 
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .product-image-section {
+        border-radius: var(--radius);
+        overflow: hidden;
+        background-color: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        padding: 20px;
+    }
 
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-        }
+    .product-info h1 {
+        font-size: 36px;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+        line-height: 1.2;
+    }
 
-        .logo span {
-            color: var(--accent-color);
-        }
+    .product-meta {
+        color: var(--text-muted);
+        margin-bottom: 25px;
+        font-size: 15px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
 
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
+    .product-price {
+        font-size: 40px;
+        color: var(--accent-color);
+        font-weight: 700;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
 
-        .container {
-            padding: 40px 5%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    .old-price {
+        font-size: 24px;
+        color: var(--text-muted);
+        text-decoration: line-through;
+        font-weight: 400;
+    }
 
+    .product-description {
+        margin-bottom: 30px;
+        line-height: 1.8;
+        color: #475569;
+        font-size: 16px;
+    }
+
+    .quantity-wrapper {
+        margin-bottom: 30px;
+    }
+
+    .quantity-label {
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .quantity-selector {
+        display: inline-flex;
+        align-items: center;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+
+    .quantity-btn {
+        width: 45px;
+        height: 45px;
+        border: none;
+        background: #f8fafc;
+        cursor: pointer;
+        font-size: 18px;
+        color: var(--secondary-color);
+        transition: background 0.2s;
+    }
+
+    .quantity-btn:hover {
+        background: #e2e8f0;
+    }
+
+    .quantity-input {
+        width: 60px;
+        text-align: center;
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--primary-color);
+        outline: none;
+        background: transparent;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+    }
+
+    .btn-lg {
+        padding: 15px 40px;
+        font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
         .product-detail {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 50px;
-            margin-bottom: 50px;
+            grid-template-columns: 1fr;
+            gap: 40px;
         }
 
-        .product-image-section img {
-            width: 100%;
-            border-radius: 8px;
-        }
-
-        .product-info h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .product-category {
-            color: #666;
-            margin-bottom: 20px;
-        }
-
-        .product-price {
-            font-size: 36px;
-            color: var(--accent-color);
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .product-description {
-            margin-bottom: 30px;
-            line-height: 1.8;
-        }
-
-        .quantity-selector {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .quantity-selector button {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #ddd;
-            background: white;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        .quantity-selector input {
-            width: 60px;
-            text-align: center;
+        .product-image-section {
             padding: 10px;
-            border: 1px solid #ddd;
         }
+    }
+</style>
+{% endblock %}
 
-        .btn {
-            display: inline-block;
-            background-color: var(--accent-color);
-            color: white;
-            padding: 15px 30px;
-            text-decoration: none;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 10px;
-        }
-
-        .btn:hover {
-            background-color: #c0392b;
-        }
-
-        .related-products {
-            margin-top: 60px;
-        }
-
-        .related-products h2 {
-            margin-bottom: 30px;
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 30px;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .product-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-
-        .product-card-info {
-            padding: 15px;
-        }
-
-        .product-card-name {
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .product-card-price {
-            color: var(--accent-color);
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        footer {
-            background-color: var(--primary-color);
-            color: white;
-            text-align: center;
-            padding: 30px 5%;
-            margin-top: 50px;
-        }
-    </style>
-</head>
-
-<body>
-    <header>
-        <div class="logo">RB <span>Trading</span></div>
-        <nav class="nav-links">
-            <a href="{% url 'index' %}">Home</a>
-            <a href="{% url 'category' %}">Products</a>
-            {% if user.is_authenticated %}
-            <a href="{% url 'cart' %}">Cart</a>
-            <a href="{% url 'logout' %}">Logout</a>
-            {% else %}
-            <a href="{% url 'login' %}">Login</a>
-            {% endif %}
-        </nav>
-    </header>
-
-    <div class="container">
-        <div class="product-detail">
-            <div class="product-image-section">
+{% block content %}
+<div class="container product-container">
+    <div class="product-detail">
+        <!-- Image Section -->
+        <div class="product-image-section">
+            <div class="product-image-wrapper">
                 {% if product.image %}
                 <img src="{{ product.image.url }}" alt="{{ product.name }}">
                 {% else %}
                 <img src="{% static 'store/image/placeholder.png' %}" alt="{{ product.name }}">
                 {% endif %}
             </div>
+        </div>
 
-            <div class="product-info">
-                <h1>{{ product.name }}</h1>
-                <div class="product-category">Category: {{ product.category.name }}</div>
-                <div class="product-price">Tk {{ product.price }}</div>
-                <div class="product-description">
-                    {{ product.description }}
-                </div>
+        <!-- Info Section -->
+        <div class="product-info">
+            <h1>{{ product.name }}</h1>
 
-                <div class="quantity-selector">
-                    <button onclick="decreaseQuantity()">-</button>
-                    <input type="number" id="quantity" value="1" min="1">
-                    <button onclick="increaseQuantity()">+</button>
-                </div>
+            <div class="product-meta">
+                <span>Category: <a href="{% url 'category' %}?category={{ product.category.slug }}"
+                        style="color: var(--accent-color);">{{ product.category.name }}</a></span>
+                {% if product.brand %}
+                <span style="margin-left: 15px;">|</span>
+                <span style="margin-left: 15px;">Brand: {{ product.brand }}</span>
+                {% endif %}
+                <span style="margin-left: 15px;">|</span>
+                <span style="margin-left: 15px;">
+                    {% if product.in_stock %}
+                    <span style="color: var(--success);"><i class="fa-solid fa-check"></i> In Stock</span>
+                    {% else %}
+                    <span style="color: var(--error);"><i class="fa-solid fa-xmark"></i> Out of Stock</span>
+                    {% endif %}
+                </span>
+            </div>
 
-                {% if user.is_authenticated %}
-                <button class="btn" onclick="addToCart()">Add to Cart</button>
+            <div class="product-price">
+                {% if product.has_discount %}
+                Tk {{ product.discounted_price|floatformat:2 }}
+                <span class="old-price">Tk {{ product.price }}</span>
                 {% else %}
-                <a href="{% url 'login' %}" class="btn">Login to Purchase</a>
+                Tk {{ product.price }}
                 {% endif %}
             </div>
-        </div>
 
-        {% if related_products %}
-        <div class="related-products">
-            <h2>Related Products</h2>
-            <div class="products-grid">
-                {% for rel_product in related_products %}
-                <div class="product-card">
-                    {% if rel_product.image %}
-                    <img src="{{ rel_product.image.url }}" alt="{{ rel_product.name }}">
-                    {% else %}
-                    <img src="{% static 'store/image/placeholder.png' %}" alt="{{ rel_product.name }}">
-                    {% endif %}
-                    <div class="product-card-info">
-                        <div class="product-card-name">{{ rel_product.name }}</div>
-                        <div class="product-card-price">Tk {{ rel_product.price }}</div>
-                        <a href="{% url 'product' %}?id={{ rel_product.id }}" class="btn"
-                            style="margin-top: 10px; display: block; text-align: center; padding: 8px;">View</a>
-                    </div>
-                </div>
-                {% endfor %}
+            <div class="product-description">
+                {{ product.description|linebreaks }}
             </div>
+
+            {% if product.in_stock %}
+            <div class="quantity-wrapper">
+                <label class="quantity-label">Quantity</label>
+                <div class="quantity-selector">
+                    <button class="quantity-btn" onclick="decreaseQuantity()">-</button>
+                    <input type="number" id="quantity" class="quantity-input" value="1" min="1"
+                        max="{{ product.stock }}">
+                    <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                {% if user.is_authenticated %}
+                <button class="btn btn-primary btn-lg" onclick="addToCart()">
+                    <i class="fa-solid fa-cart-shopping" style="margin-right: 10px;"></i> Add to Cart
+                </button>
+                {% else %}
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary btn-lg">
+                    Login to Purchase
+                </a>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="alert alert-error">
+                This item is currently out of stock.
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 
-    <footer>
-        <p>&copy; 2025 RB Trading. All Rights Reserved.</p>
-    </footer>
+    {% if related_products %}
+    <div class="related-section">
+        <h2 style="font-size: 28px; margin-bottom: 30px; color: var(--primary-color);">Related Products</h2>
+        <div class="products-grid">
+            {% for item in related_products %}
+            <div class="card">
+                <!-- Badge -->
+                {% if item.has_discount %}
+                <div class="badge">-{{ item.discount_percentage|floatformat:0 }}%</div>
+                {% endif %}
 
-    <script>
-        function increaseQuantity() {
-            const input = document.getElementById('quantity');
+                <a href="{% url 'product' %}?id={{ item.id }}" class="product-image-wrapper">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                    {% else %}
+                    <img src="{% static 'store/image/placeholder.png' %}" alt="{{ item.name }}">
+                    {% endif %}
+                </a>
+
+                <div class="product-details">
+                    <h3 class="product-title" title="{{ item.name }}">
+                        <a href="{% url 'product' %}?id={{ item.id }}">{{ item.name }}</a>
+                    </h3>
+
+                    <div class="product-price">
+                        {% if item.has_discount %}
+                        Tk {{ item.discounted_price|floatformat:2 }}
+                        <span class="original">Tk {{ item.price }}</span>
+                        {% else %}
+                        Tk {{ item.price }}
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'product' %}?id={{ item.id }}" class="btn btn-outline" style="width: 100%;">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function increaseQuantity() {
+        const input = document.getElementById('quantity');
+        const max = parseInt(input.getAttribute('max')) || 99;
+        if (parseInt(input.value) < max) {
             input.value = parseInt(input.value) + 1;
         }
+    }
 
-        function decreaseQuantity() {
-            const input = document.getElementById('quantity');
-            if (parseInt(input.value) > 1) {
-                input.value = parseInt(input.value) - 1;
-            }
+    function decreaseQuantity() {
+        const input = document.getElementById('quantity');
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
         }
+    }
 
-        function addToCart() {
-            const quantity = document.getElementById('quantity').value;
-            const csrftoken = document.querySelector('[name=csrf-token]').content;
+    function addToCart() {
+        const quantity = document.getElementById('quantity').value;
+        const btn = document.querySelector('.btn-primary');
+        const originalText = btn.innerHTML;
 
-            fetch('{% url "add_to_cart" product.id %}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ quantity: quantity })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                    } else {
-                        alert('Error adding to cart');
+        // Show loading state
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+        btn.disabled = true;
+
+        fetch('{% url "add_to_cart" product.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ quantity: quantity })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update cart count in navbar
+                    const countBadge = document.getElementById('cart-count');
+                    if (countBadge) {
+                        countBadge.innerText = '(' + data.cart_count + ')';
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error adding to cart');
-                });
-        }
-    </script>
-</body>
 
-</html>
+                    // Show success feedback on button
+                    btn.style.backgroundColor = 'var(--success)';
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Added!';
+
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.style.backgroundColor = '';
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                } else {
+                    alert('Error submitting to cart');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error adding to cart');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+    }
+</script>
+{% endblock %}

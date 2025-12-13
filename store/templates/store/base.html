@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RB Trading{% endblock %}</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'store/css/style.css' %}?v=2">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <a href="{% url 'index' %}" class="logo">RB <span>Trading</span></a>
+
+            <nav class="nav-links">
+                <a href="{% url 'index' %}"
+                    class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                    Home
+                </a>
+                <a href="{% url 'category' %}"
+                    class="{% if request.resolver_match.url_name == 'category' %}active{% endif %}">
+                    Shop
+                </a>
+
+                {% if user.is_authenticated %}
+                <a href="{% url 'cart' %}" class="{% if request.resolver_match.url_name == 'cart' %}active{% endif %}">
+                    <i class="fa-solid fa-cart-shopping"></i> Cart
+                    <span id="cart-count">
+                        {% with cart_count=user.cart_items.count %}
+                        {% if cart_count > 0 %}({{ cart_count }}){% endif %}
+                        {% endwith %}
+                    </span>
+                </a>
+
+                <div class="nav-actions">
+                    <a href="{% url 'profile' %}" style="font-weight: 600;">Profile</a>
+                    <a href="{% url 'logout' %}" class="btn btn-sm btn-outline">
+                        Logout
+                    </a>
+                </div>
+                {% else %}
+                <div class="nav-actions">
+                    <a href="{% url 'login' %}" style="font-weight: 600;">Login</a>
+                    <a href="{% url 'register' %}" class="btn btn-sm btn-primary">Sign Up</a>
+                </div>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <!-- Flash Messages -->
+    {% if messages %}
+    <div class="container messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3>RB Trading</h3>
+                    <p style="color: #94a3b8; font-size: 14px; line-height: 1.6;">
+                        Your premium destination for quality electronics and gadgets.
+                        Experience the future of shopping today.
+                    </p>
+                </div>
+                <div class="footer-col">
+                    <h3>Quick Links</h3>
+                    <a href="{% url 'index' %}">Home</a>
+                    <a href="{% url 'category' %}">All Products</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'cart' %}">Cart</a>
+                    <a href="{% url 'profile' %}">Profile</a>
+                    <a href="{% url 'logout' %}">Logout</a>
+                    {% else %}
+                    <a href="#">About Us</a>
+                    <a href="#">Contact</a>
+                    {% endif %}
+                </div>
+                <div class="footer-col">
+                    <h3>Customer Service</h3>
+                    <a href="#">Shipping Policy</a>
+                    <a href="#">Returns & Refunds</a>
+                    <a href="#">FAQ</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+                <div class="footer-col">
+                    <h3>Connect</h3>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="#"><i class="fa-brands fa-facebook fa-lg"></i></a>
+                        <a href="#"><i class="fa-brands fa-twitter fa-lg"></i></a>
+                        <a href="#"><i class="fa-brands fa-instagram fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; {% now "Y" %} RB Trading. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

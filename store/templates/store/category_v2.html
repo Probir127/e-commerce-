@@ -1,370 +1,267 @@
+{% extends 'store/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products - RB Trading</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% block title %}Products - RB Trading{% endblock %}
 
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #e74c3c;
-            --secondary-color: #3498db;
-            --light-color: #ecf0f1;
-        }
+{% block extra_css %}
+<style>
+    /* Category Page specific styles */
+    .page-container {
+        display: flex;
+        padding: 40px 0;
+        gap: 40px;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
-        }
+    .sidebar {
+        width: 280px;
+        flex-shrink: 0;
+    }
 
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .filter-section {
+        background: white;
+        padding: 25px;
+        border-radius: var(--radius);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+        border: 1px solid var(--border-color);
+    }
 
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-        }
+    .filter-section h3 {
+        margin-bottom: 20px;
+        color: var(--primary-color);
+        font-size: 18px;
+        font-weight: 600;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 10px;
+    }
 
-        .logo span {
-            color: var(--accent-color);
-        }
+    .filter-link {
+        display: block;
+        padding: 10px 12px;
+        color: var(--secondary-color);
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.2s;
+        margin-bottom: 5px;
+    }
 
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-        }
+    .filter-link:hover,
+    .filter-link.active {
+        background-color: #eff6ff;
+        color: var(--accent-color);
+        font-weight: 500;
+    }
 
-        .nav-links a:hover {
-            color: var(--accent-color);
-        }
+    .main-content {
+        flex: 1;
+    }
 
-        .container {
-            display: flex;
-            padding: 30px 5%;
-            gap: 30px;
+    .search-container {
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 15px 20px;
+        padding-right: 50px;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius);
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+
+    .search-input:focus {
+        border-color: var(--accent-color);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-family: inherit;
+    }
+
+    .filter-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .clear-filter {
+        display: block;
+        text-align: center;
+        margin-top: 15px;
+        color: var(--text-muted);
+        font-size: 14px;
+        text-decoration: underline;
+    }
+
+    .clear-filter:hover {
+        color: var(--accent-color);
+    }
+
+    @media (max-width: 900px) {
+        .page-container {
+            flex-direction: column;
         }
 
         .sidebar {
-            width: 250px;
-            flex-shrink: 0;
-        }
-
-        .filter-section {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .filter-section h3 {
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-
-        .filter-section a {
-            display: block;
-            padding: 8px 0;
-            color: #333;
-            text-decoration: none;
-        }
-
-        .filter-section a:hover {
-            color: var(--accent-color);
-        }
-
-        .main-content {
-            flex: 1;
-        }
-
-        .search-bar {
-            margin-bottom: 30px;
-        }
-
-        .search-bar input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
         }
+    }
+</style>
+{% endblock %}
 
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-        }
+{% block content %}
+<div class="container page-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Categories -->
+        <div class="filter-section">
+            <h3>Categories</h3>
+            <a href="{% url 'category' %}" class="filter-link {% if not request.GET.category %}active{% endif %}">
+                All Products
+            </a>
+            {% for cat in categories %}
+            <a href="{% url 'category' %}?category={{ cat.slug }}"
+                class="filter-link {% if request.GET.category == cat.slug %}active{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
 
-        .product-card {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .product-image {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-        }
-
-        .product-info {
-            padding: 20px;
-        }
-
-        .product-name {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .product-category {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .product-price {
-            font-size: 24px;
-            color: var(--accent-color);
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .btn {
-            display: inline-block;
-            background-color: var(--accent-color);
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .btn:hover {
-            background-color: #c0392b;
-        }
-
-        .filter-section input[type="text"],
-        .filter-section input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        .filter-section button {
-            width: 100%;
-            padding: 10px;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .filter-section button:hover {
-            background-color: #c0392b;
-        }
-
-        .filter-section .clear-filter {
-            display: block;
-            text-align: center;
-            margin-top: 10px;
-            color: var(--accent-color);
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-            position: relative;
-        }
-
-        .discount-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: var(--accent-color);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-weight: 700;
-            font-size: 14px;
-            z-index: 2;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .product-brand {
-            color: #666;
-            font-size: 13px;
-            margin-bottom: 5px;
-            font-style: italic;
-        }
-
-        .price-container {
-            margin-bottom: 15px;
-        }
-
-        .original-price {
-            font-size: 16px;
-            color: #999;
-            text-decoration: line-through;
-            margin-right: 10px;
-            display: inline-block;
-        }
-
-        footer {
-            background-color: var(--primary-color);
-            color: white;
-            text-align: center;
-            padding: 30px 5%;
-            margin-top: 50px;
-        }
-    </style>
-</head>
-
-<body>
-    <header>
-        <div class="logo">RB <span>Trading</span></div>
-        <nav class="nav-links">
-            <a href="{% url 'index' %}">Home</a>
-            <a href="{% url 'category' %}">Products</a>
-            {% if user.is_authenticated %}
-            <a href="{% url 'cart' %}">Cart</a>
-            <a href="{% url 'logout' %}">Logout</a>
-            {% else %}
-            <a href="{% url 'login' %}">Login</a>
+        <!-- Brands -->
+        <div class="filter-section">
+            <h3>Brands</h3>
+            <a href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}"
+                class="filter-link {% if not request.GET.brand %}active{% endif %}">
+                All Brands
+            </a>
+            {% for brand in brands %}
+            {% if brand %}
+            <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}brand={{ brand }}"
+                class="filter-link {% if selected_brand == brand %}active{% endif %}">
+                {{ brand }}
+            </a>
             {% endif %}
-        </nav>
-    </header>
+            {% endfor %}
+        </div>
 
-    <div class="container">
-        <aside class="sidebar">
-            <div class="filter-section">
-                <h3>Categories</h3>
-                <a href="{% url 'category' %}">All Products</a>
-                {% for cat in categories %}
-                <a href="{% url 'category' %}?category={{ cat.slug }}">{{ cat.name }}</a>
-                {% endfor %}
-            </div>
-
-            <div class="filter-section">
-                <h3>Brands</h3>
-                <a
-                    href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}">All
-                    Brands</a>
-                {% for brand in brands %}
-                {% if selected_brand == brand %}
-                <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}brand={{ brand }}"
-                    style="color: var(--accent-color); font-weight: bold;">
-                    {{ brand }}
-                </a>
-                {% else %}
-                <a
-                    href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}brand={{ brand }}">
-                    {{ brand }}
-                </a>
+        <!-- Price Filter -->
+        <div class="filter-section">
+            <h3>Price Range</h3>
+            <form method="get">
+                {% if request.GET.category %}
+                <input type="hidden" name="category" value="{{ request.GET.category }}">
                 {% endif %}
-                {% endfor %}
-            </div>
+                {% if request.GET.brand %}
+                <input type="hidden" name="brand" value="{{ request.GET.brand }}">
+                {% endif %}
 
-            <div class="filter-section">
-                <h3>Price Range</h3>
-                <form method="get">
-                    {% if request.GET.category %}
-                    <input type="hidden" name="category" value="{{ request.GET.category }}">
-                    {% endif %}
-                    {% if request.GET.brand %}
-                    <input type="hidden" name="brand" value="{{ request.GET.brand }}">
-                    {% endif %}
-                    <input type="number" name="min_price" placeholder="Min Price" value="{{ min_price }}" step="0.01"
-                        min="0">
-                    <input type="number" name="max_price" placeholder="Max Price" value="{{ max_price }}" step="0.01"
-                        min="0">
-                    <button type="submit">Apply Filter</button>
-                    {% if min_price or max_price %}
-                    <a href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}{% if request.GET.brand %}{% if request.GET.category %}&{% else %}?{% endif %}brand={{ request.GET.brand }}{% endif %}"
-                        class="clear-filter">Clear Price Filter</a>
-                    {% endif %}
-                </form>
-            </div>
-        </aside>
+                <input type="number" name="min_price" class="filter-input" placeholder="Min Price"
+                    value="{{ min_price }}" step="0.01" min="0">
+                <input type="number" name="max_price" class="filter-input" placeholder="Max Price"
+                    value="{{ max_price }}" step="0.01" min="0">
 
-        <main class="main-content">
-            <div class="search-bar">
-                <form method="get">
-                    <input type="text" name="search" placeholder="Search products..." value="{{ request.GET.search }}">
-                </form>
-            </div>
+                <button type="submit" class="btn btn-primary filter-btn">Apply Filter</button>
 
-            <div class="products-grid">
-                {% for product in products %}
-                <div class="product-card">
-                    {% if product.has_discount %}
-                    <div class="discount-badge">-{{ product.discount_percentage|floatformat:0 }}%</div>
-                    {% endif %}
+                {% if min_price or max_price %}
+                <a href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}{% if request.GET.brand %}{% if request.GET.category %}&{% else %}?{% endif %}brand={{ request.GET.brand }}{% endif %}"
+                    class="clear-filter">Clear Price Filter</a>
+                {% endif %}
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Search -->
+        <div class="search-container">
+            <form method="get">
+                {% if request.GET.category %}<input type="hidden" name="category" value="{{ request.GET.category }}">{% endif %}
+                {% if request.GET.brand %}<input type="hidden" name="brand" value="{{ request.GET.brand }}">{% endif %}
+                <input type="text" name="search" class="search-input" placeholder="Search for products..."
+                    value="{{ request.GET.search }}">
+            </form>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="card">
+                <!-- Badge -->
+                {% if product.has_discount %}
+                <div class="badge">-{{ product.discount_percentage|floatformat:0 }}%</div>
+                {% endif %}
+
+                <!-- Image -->
+                <a href="{% url 'product' %}?id={{ product.id }}" class="product-image-wrapper">
                     {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
                     {% else %}
-                    <img src="{% static 'store/image/placeholder.png' %}" alt="{{ product.name }}"
-                        class="product-image">
+                    <img src="{% static 'store/image/placeholder.png' %}" alt="{{ product.name }}">
                     {% endif %}
-                    <div class="product-info">
-                        <div class="product-name">{{ product.name }}</div>
-                        {% if product.brand %}
-                        <div class="product-brand">Brand: {{ product.brand }}</div>
+                </a>
+
+                <!-- Info -->
+                <div class="product-details">
+                    <h3 class="product-title" title="{{ product.name }}">
+                        <a href="{% url 'product' %}?id={{ product.id }}">{{ product.name }}</a>
+                    </h3>
+
+                    {% if product.brand %}
+                    <div style="font-size: 13px; color: #64748b; margin-bottom: 5px;">{{ product.brand }}</div>
+                    {% endif %}
+
+                    <div class="product-price">
+                        {% if product.has_discount %}
+                        Tk {{ product.discounted_price|floatformat:2 }}
+                        <span class="original">Tk {{ product.price }}</span>
+                        {% else %}
+                        Tk {{ product.price }}
                         {% endif %}
-                        <div class="product-category">{{ product.category.name }}</div>
-                        <div class="price-container">
-                            {% if product.has_discount %}
-                            <span class="original-price">Tk {{ product.price }}</span>
-                            <span class="product-price">Tk {{ product.discounted_price|floatformat:2 }}</span>
-                            {% else %}
-                            <span class="product-price">Tk {{ product.price }}</span>
-                            {% endif %}
-                        </div>
-                        <a href="{% url 'product' %}?id={{ product.id }}" class="btn">View Details</a>
                     </div>
+
+                    <a href="{% url 'product' %}?id={{ product.id }}" class="btn btn-outline" style="width: 100%;">
+                        View Details
+                    </a>
                 </div>
-                {% empty %}
-                <p>No products found.</p>
-                {% endfor %}
             </div>
-        </main>
-    </div>
+            {% empty %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px; background: white; border-radius: 12px;">
+                <h3>No products found</h3>
+                <p style="color: #64748b;">Try adjusting your search or filters.</p>
+            </div>
+            {% endfor %}
+        </div>
 
-    <footer>
-        <p>&copy; 2025 RB Trading. All Rights Reserved.</p>
-    </footer>
-</body>
+        <!-- Pagination -->
+        {% if products.has_other_pages %}
+        <div class="pagination">
+            {% if products.has_previous %}
+            <a href="?page={{ products.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                class="page-link">&laquo;</a>
+            {% endif %}
 
-</html>
+            {% for i in products.paginator.page_range %}
+            {% if products.number == i %}
+            <span class="page-link active">{{ i }}</span>
+            {% else %}
+            <a href="?page={{ i }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                class="page-link">{{ i }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if products.has_next %}
+            <a href="?page={{ products.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                class="page-link">&raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

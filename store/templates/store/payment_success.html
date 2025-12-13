@@ -121,7 +121,13 @@
             A confirmation email has been sent to your email address.
         </p>
 
-        <a href="{% url 'index' %}" class="btn">Continue Shopping</a>
+        <div class="action-buttons" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+            <a href="{% url 'customer_order_invoice' order.id %}" target="_blank" class="btn"
+                style="background-color: #34495e;">
+                Print Invoice
+            </a>
+            <a href="{% url 'profile' %}" class="btn">Go to Profile</a>
+        </div>
     </div>
 </body>
 

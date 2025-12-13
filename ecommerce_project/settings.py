@@ -11,19 +11,24 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+d#ly@uf_k2)+64=sw^ol(1@&+)&cjrr&*#6a8eq-#g%!acb6s'
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-+d#ly@uf_k2)+64=sw^ol(1@&+)&cjrr&*#6a8eq-#g%!acb6s')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*', '.ngrok-free.dev']
 
@@ -33,6 +38,7 @@ CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev']
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +47,70 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'store',
 ]
+
+JAZZMIN_SETTINGS = {
+    "site_title": "RB Trading Admin",
+    "site_header": "RB Trading",
+    "site_brand": "RB Trading",
+    "site_logo": "store/image/placeholder.png",  # We can update this path if we have a real logo
+    "welcome_sign": "Welcome to RB Trading Admin Panel",
+    "search_model": ["store.Product", "store.Order"],
+    "user_avatar": None,
+    "topmenu_links": [
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "View Site", "url": "index", "new_window": True},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    "order_with_respect_to": ["store", "store.Order", "store.Product", "store.Category", "auth"],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "store.Product": "fas fa-box-open",
+        "store.Category": "fas fa-tags",
+        "store.Order": "fas fa-shopping-cart",
+        "store.CartItem": "fas fa-cart-plus",
+        "store.OrderItem": "fas fa-list",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "related_modal_active": False,
+    "custom_css": None,
+    "custom_js": None,
+    "show_ui_builder": False,
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": False,
+    "accent": "accent-primary",
+    "navbar": "navbar-white navbar-light",
+    "no_navbar_border": False,
+    "navbar_fixed": False,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": False,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "theme": "default",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -130,6 +200,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Stripe Configuration
 # For testing, use test keys from https://dashboard.stripe.com/test/apikeys
-STRIPE_PUBLIC_KEY = 'pk_test_51QTdIEP2aBRtBGlVxFHqJ8example'  # Replace with your test public key
-STRIPE_SECRET_KEY = 'sk_test_51QTdIEP2aBRtBGlVxFHqJ8example'  # Replace with your test secret key
-STRIPE_WEBHOOK_SECRET = ''  # Optional: for webhook verification
+STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', 'pk_test_51QTdIEP2aBRtBGlVxFHqJ8example')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51QTdIEP2aBRtBGlVxFHqJ8example')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')  # Optional: for webhook verification
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
+# For production, you would use:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'
+
+ADMINS = [('Admin', 'admin@example.com')]
+DEFAULT_FROM_EMAIL = 'noreply@rbtrading.com'

@@ -1,0 +1,281 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}My Profile - RB Trading{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        padding: 60px 0;
+    }
+
+    .profile-header {
+        margin-bottom: 40px;
+    }
+
+    .profile-header h1 {
+        font-size: 32px;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+    }
+
+    .user-info-card {
+        background: white;
+        border-radius: var(--radius);
+        padding: 30px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 40px;
+    }
+
+    .user-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 30px;
+    }
+
+    .info-item label {
+        display: block;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .info-item p {
+        font-size: 18px;
+        color: var(--primary-color);
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .orders-section h2 {
+        font-size: 24px;
+        margin-bottom: 25px;
+        color: var(--primary-color);
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .order-card {
+        background: white;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-color);
+        margin-bottom: 25px;
+        overflow: hidden;
+        transition: box-shadow 0.2s;
+    }
+
+    .order-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-header {
+        background: #f8fafc;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .order-meta div {
+        display: inline-block;
+        margin-right: 30px;
+    }
+
+    .order-meta span {
+        display: block;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+
+    .order-meta strong {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .order-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .status-pending {
+        background: #fff7ed;
+        color: #c2410c;
+    }
+
+    .status-processing {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    .status-shipped {
+        background: #f0fdf4;
+        color: #15803d;
+    }
+
+    .status-delivered {
+        background: #f0fdf4;
+        color: #166534;
+    }
+
+    .status-cancelled {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    .order-items {
+        padding: 20px;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-name {
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+
+    .item-qty {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-left: 10px;
+    }
+
+    .item-price {
+        font-weight: 600;
+        color: var(--secondary-color);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px;
+        background: white;
+        border-radius: var(--radius);
+        color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+        .order-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .order-meta div {
+            display: block;
+            margin-bottom: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container profile-container">
+    <div class="profile-header">
+        <h1>My Account</h1>
+        <p style="color: var(--text-muted);">Manage your profile and view order history</p>
+    </div>
+
+    <!-- User Info -->
+    <div class="user-info-card">
+        <div class="user-info-grid">
+            <div class="info-item">
+                <label>Username</label>
+                <p>{{ user.username }}</p>
+            </div>
+            <div class="info-item">
+                <label>Email</label>
+                <p>{{ user.email|default:"Not provided" }}</p>
+            </div>
+            <div class="info-item">
+                <label>Member Since</label>
+                <p>{{ user.date_joined|date:"M d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders -->
+    <div class="orders-section">
+        <h2>Order History</h2>
+
+        {% if orders %}
+        {% for order in orders %}
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-meta">
+                    <div>
+                        <span>Order ID</span>
+                        <strong>#{{ order.id }}</strong>
+                    </div>
+                    <div>
+                        <span>Date Placed</span>
+                        <strong>{{ order.created_at|date:"M d, Y" }}</strong>
+                    </div>
+                    <div>
+                        <span>Total Amount</span>
+                        <strong>Tk {{ order.total }}</strong>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'customer_order_invoice' order.id %}" target="_blank"
+                        class="btn btn-sm btn-outline-primary shadow-sm" style="border-radius: 20px;">
+                        <i class="fas fa-file-invoice me-1"></i> Invoice
+                    </a>
+
+                    {% if order.status == 'pending' or order.status == 'processing' %}
+                    <a href="{% url 'cancel_order' order.id %}" class="btn btn-sm btn-outline-danger shadow-sm"
+                        style="border-radius: 20px;"
+                        onclick="return confirm('Are you sure you want to cancel this order?');">
+                        <i class="fas fa-times me-1"></i> Cancel
+                    </a>
+                    {% endif %}
+
+                    <div class="order-status status-{{ order.status }}">
+                        {{ order.get_status_display }}
+                    </div>
+                </div>
+            </div>
+            <!-- Optional: Show order items if you have a relation -->
+            <!-- Ideally, create a detail view, but we can list items if available via reverse relation -->
+            <!-- Assuming OrderItem related_name='items' or implicit orderitem_set -->
+            <div class="order-items">
+                {% for item in order.orderitem_set.all %}
+                <div class="order-item">
+                    <div>
+                        <span class="item-name">{{ item.product.name }}</span>
+                        <span class="item-qty">x {{ item.quantity }}</span>
+                    </div>
+                    <span class="item-price">Tk {{ item.price }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+            <p>You haven't placed any orders yet.</p>
+            <a href="{% url 'category' %}" class="btn btn-primary" style="margin-top: 20px;">Start Shopping</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
