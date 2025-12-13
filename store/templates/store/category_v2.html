@@ -104,13 +104,182 @@
         color: var(--accent-color);
     }
 
+    /* ===== RESPONSIVE STYLES ===== */
+
+    /* Mobile Filter Toggle Button */
+    .mobile-filter-toggle {
+        display: none;
+        width: 100%;
+        padding: 15px 20px;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        text-align: left;
+        font-weight: 600;
+        color: var(--primary-color);
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s;
+    }
+
+    .mobile-filter-toggle:hover {
+        background: #f8fafc;
+        border-color: var(--accent-color);
+    }
+
+    .mobile-filter-toggle i {
+        color: var(--secondary-color);
+    }
+
+    /* Tablet (900px and below) */
     @media (max-width: 900px) {
         .page-container {
             flex-direction: column;
+            padding: 20px 0;
+            gap: 20px;
+        }
+
+        .mobile-filter-toggle {
+            display: flex;
         }
 
         .sidebar {
             width: 100%;
+        }
+
+        /* Hidden by default on mobile/tablet */
+        .filter-wrapper {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .filter-wrapper.active {
+            display: grid;
+        }
+
+        .filter-section {
+            margin-bottom: 0;
+            height: 100%;
+            /* Equal height cards */
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    }
+
+    /* Mobile (768px and below) */
+    @media (max-width: 768px) {
+        .filter-wrapper {
+            /* Switch back to single column inside the dropdown for small screens */
+            grid-template-columns: 1fr;
+        }
+
+        .filter-wrapper.active {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .page-container {
+            padding: 15px 0;
+            gap: 15px;
+        }
+
+        .filter-section {
+            padding: 20px;
+        }
+
+        .search-input {
+            padding: 12px 16px;
+            font-size: 15px;
+        }
+
+        /* Optimize filter inputs for mobile */
+        .filter-input {
+            font-size: 16px;
+            /* Prevents zoom on iOS */
+            padding: 12px;
+        }
+
+        .filter-btn {
+            padding: 12px 20px;
+            font-size: 15px;
+        }
+    }
+
+    /* Mobile Small (480px and below) */
+    @media (max-width: 480px) {
+        .page-container {
+            padding: 10px 0;
+            gap: 15px;
+        }
+
+        .filter-section {
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .filter-section h3 {
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+
+        .mobile-filter-toggle {
+            padding: 12px 15px;
+            font-size: 15px;
+        }
+
+        .filter-link {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            padding: 12px 14px;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+
+        .filter-input {
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+
+        .filter-btn {
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+
+        /* Make pagination more mobile-friendly */
+        .pagination {
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .page-link {
+            width: 36px;
+            height: 36px;
+            font-size: 14px;
         }
     }
 </style>
@@ -120,60 +289,69 @@
 <div class="container page-container">
     <!-- Sidebar -->
     <aside class="sidebar">
-        <!-- Categories -->
-        <div class="filter-section">
-            <h3>Categories</h3>
-            <a href="{% url 'category' %}" class="filter-link {% if not request.GET.category %}active{% endif %}">
-                All Products
-            </a>
-            {% for cat in categories %}
-            <a href="{% url 'category' %}?category={{ cat.slug }}"
-                class="filter-link {% if request.GET.category == cat.slug %}active{% endif %}">
-                {{ cat.name }}
-            </a>
-            {% endfor %}
-        </div>
+        <!-- Mobile Toggle Button -->
+        <button class="mobile-filter-toggle" id="filterToggle" onclick="toggleFilters()">
+            <span><i class="fa-solid fa-filter" style="margin-right: 8px;"></i> Filter Products</span>
+            <i class="fa-solid fa-chevron-down" id="filterArrow"></i>
+        </button>
 
-        <!-- Brands -->
-        <div class="filter-section">
-            <h3>Brands</h3>
-            <a href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}"
-                class="filter-link {% if not request.GET.brand %}active{% endif %}">
-                All Brands
-            </a>
-            {% for brand in brands %}
-            {% if brand %}
-            <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}brand={{ brand }}"
-                class="filter-link {% if selected_brand == brand %}active{% endif %}">
-                {{ brand }}
-            </a>
-            {% endif %}
-            {% endfor %}
-        </div>
+        <!-- Filter Wrapper -->
+        <div class="filter-wrapper" id="filterWrapper">
+            <!-- Categories -->
+            <div class="filter-section">
+                <h3>Categories</h3>
+                <a href="{% url 'category' %}" class="filter-link {% if not request.GET.category %}active{% endif %}">
+                    All Products
+                </a>
+                {% for cat in categories %}
+                <a href="{% url 'category' %}?category={{ cat.slug }}"
+                    class="filter-link {% if request.GET.category == cat.slug %}active{% endif %}">
+                    {{ cat.name }}
+                </a>
+                {% endfor %}
+            </div>
 
-        <!-- Price Filter -->
-        <div class="filter-section">
-            <h3>Price Range</h3>
-            <form method="get">
-                {% if request.GET.category %}
-                <input type="hidden" name="category" value="{{ request.GET.category }}">
+            <!-- Brands -->
+            <div class="filter-section">
+                <h3>Brands</h3>
+                <a href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}"
+                    class="filter-link {% if not request.GET.brand %}active{% endif %}">
+                    All Brands
+                </a>
+                {% for brand in brands %}
+                {% if brand %}
+                <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}brand={{ brand }}"
+                    class="filter-link {% if selected_brand == brand %}active{% endif %}">
+                    {{ brand }}
+                </a>
                 {% endif %}
-                {% if request.GET.brand %}
-                <input type="hidden" name="brand" value="{{ request.GET.brand }}">
-                {% endif %}
+                {% endfor %}
+            </div>
 
-                <input type="number" name="min_price" class="filter-input" placeholder="Min Price"
-                    value="{{ min_price }}" step="0.01" min="0">
-                <input type="number" name="max_price" class="filter-input" placeholder="Max Price"
-                    value="{{ max_price }}" step="0.01" min="0">
+            <!-- Price Filter -->
+            <div class="filter-section">
+                <h3>Price Range</h3>
+                <form method="get">
+                    {% if request.GET.category %}
+                    <input type="hidden" name="category" value="{{ request.GET.category }}">
+                    {% endif %}
+                    {% if request.GET.brand %}
+                    <input type="hidden" name="brand" value="{{ request.GET.brand }}">
+                    {% endif %}
 
-                <button type="submit" class="btn btn-primary filter-btn">Apply Filter</button>
+                    <input type="number" name="min_price" class="filter-input" placeholder="Min Price"
+                        value="{{ min_price }}" step="0.01" min="0">
+                    <input type="number" name="max_price" class="filter-input" placeholder="Max Price"
+                        value="{{ max_price }}" step="0.01" min="0">
 
-                {% if min_price or max_price %}
-                <a href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}{% if request.GET.brand %}{% if request.GET.category %}&{% else %}?{% endif %}brand={{ request.GET.brand }}{% endif %}"
-                    class="clear-filter">Clear Price Filter</a>
-                {% endif %}
-            </form>
+                    <button type="submit" class="btn btn-primary filter-btn">Apply Filter</button>
+
+                    {% if min_price or max_price %}
+                    <a href="{% url 'category' %}?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.brand %}brand={{ request.GET.brand }}{% endif %}"
+                        class="clear-filter">Clear Price Filter</a>
+                    {% endif %}
+                </form>
+            </div>
         </div>
     </aside>
 
@@ -182,8 +360,12 @@
         <!-- Search -->
         <div class="search-container">
             <form method="get">
-                {% if request.GET.category %}<input type="hidden" name="category" value="{{ request.GET.category }}">{% endif %}
-                {% if request.GET.brand %}<input type="hidden" name="brand" value="{{ request.GET.brand }}">{% endif %}
+                {% if request.GET.category %}
+                <input type="hidden" name="category" value="{{ request.GET.category }}">
+                {% endif %}
+                {% if request.GET.brand %}
+                <input type="hidden" name="brand" value="{{ request.GET.brand }}">
+                {% endif %}
                 <input type="text" name="search" class="search-input" placeholder="Search for products..."
                     value="{{ request.GET.search }}">
             </form>
@@ -195,7 +377,7 @@
             <div class="card">
                 <!-- Badge -->
                 {% if product.has_discount %}
-                <div class="badge">-{{ product.discount_percentage|floatformat:0 }}%</div>
+                <div class="overlay-badge">-{{ product.discount_percentage|floatformat:0 }}%</div>
                 {% endif %}
 
                 <!-- Image -->
@@ -264,4 +446,23 @@
         {% endif %}
     </main>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleFilters() {
+        const wrapper = document.getElementById('filterWrapper');
+        const arrow = document.getElementById('filterArrow');
+
+        wrapper.classList.toggle('active');
+
+        if (wrapper.classList.contains('active')) {
+            arrow.classList.remove('fa-chevron-down');
+            arrow.classList.add('fa-chevron-up');
+        } else {
+            arrow.classList.remove('fa-chevron-up');
+            arrow.classList.add('fa-chevron-down');
+        }
+    }
+</script>
 {% endblock %}

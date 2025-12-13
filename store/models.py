@@ -103,6 +103,7 @@ class Order(models.Model):
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
     payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     shipping_address = models.TextField()
+    visible_to_customer = models.BooleanField(default=True, help_text="If false, hides order from customer profile (soft delete)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -125,3 +126,28 @@ class OrderItem(models.Model):
     @property
     def subtotal(self):
         return self.quantity * self.price
+
+
+class SiteSettings(models.Model):
+    """Singleton model for site-wide settings"""
+    email_host_user = models.CharField(
+        max_length=255, 
+        help_text="Your Gmail address (e.g., yourname@gmail.com). Acts as the sender."
+    )
+    email_host_password = models.CharField(
+        max_length=255, 
+        help_text="Your 16-character App Password. Go to Google Account > Security > 2-Step Verification > App Passwords to generate one."
+    )
+    
+    class Meta:
+        verbose_name = "Site Settings"
+        verbose_name_plural = "Site Settings"
+
+    def save(self, *args, **kwargs):
+        # Ensure only one instance exists
+        if not self.pk and SiteSettings.objects.exists():
+            return
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return "Email Configuration"

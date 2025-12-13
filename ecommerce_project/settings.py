@@ -19,6 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
+# Login URL configuration
+LOGIN_URL = 'login'
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -54,8 +57,13 @@ JAZZMIN_SETTINGS = {
     "site_brand": "RB Trading",
     "site_logo": "store/image/placeholder.png",  # We can update this path if we have a real logo
     "welcome_sign": "Welcome to RB Trading Admin Panel",
-    "search_model": ["store.Product", "store.Order"],
+    "copyright": "RB Trading Ltd",
+    "search_model": ["store.Product", "store.Order", "auth.User"],
     "user_avatar": None,
+    # Login settings
+    "login_logo": None,
+    "login_logo_dark": None,
+    "login_background_image": "store/image/Oneplus-Ace-2V-.jpg",
     "topmenu_links": [
         {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
         {"name": "View Site", "url": "index", "new_window": True},
@@ -72,13 +80,14 @@ JAZZMIN_SETTINGS = {
         "store.Product": "fas fa-box-open",
         "store.Category": "fas fa-tags",
         "store.Order": "fas fa-shopping-cart",
-        "store.CartItem": "fas fa-cart-plus",
+        "store.CartItem": "fas fa-cart-shopping",
         "store.OrderItem": "fas fa-list",
+        "store.SiteSettings": "fas fa-cogs",
     },
     "default_icon_parents": "fas fa-chevron-circle-right",
     "default_icon_children": "fas fa-circle",
     "related_modal_active": False,
-    "custom_css": None,
+    "custom_css": "store/css/admin_custom.css",
     "custom_js": None,
     "show_ui_builder": False,
     "changeform_format": "horizontal_tabs",
@@ -88,23 +97,23 @@ JAZZMIN_SETTINGS = {
 JAZZMIN_UI_TWEAKS = {
     "navbar_small_text": False,
     "footer_small_text": False,
-    "body_small_text": False,
+    "body_small_text": True,
     "brand_small_text": False,
-    "brand_colour": False,
-    "accent": "accent-primary",
+    "brand_colour": "navbar-indigo",
+    "accent": "accent-indigo",
     "navbar": "navbar-white navbar-light",
     "no_navbar_border": False,
-    "navbar_fixed": False,
+    "navbar_fixed": True,
     "layout_boxed": False,
     "footer_fixed": False,
-    "sidebar_fixed": False,
-    "sidebar": "sidebar-dark-primary",
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-light-indigo",
     "sidebar_nav_small_text": False,
     "theme": "default",
     "dark_mode_theme": None,
     "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
+        "primary": "btn-outline-primary",
+        "secondary": "btn-outline-secondary",
         "info": "btn-info",
         "warning": "btn-warning",
         "danger": "btn-danger",
@@ -127,7 +136,7 @@ ROOT_URLCONF = 'ecommerce_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -205,14 +214,13 @@ STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51QTdIEP2aBRtBGlVxFH
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')  # Optional: for webhook verification
 
 # Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
-# For production, you would use:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'your-app-password'
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
-ADMINS = [('Admin', 'admin@example.com')]
-DEFAULT_FROM_EMAIL = 'noreply@rbtrading.com'
+ADMINS = [('Admin', os.getenv('EMAIL_HOST_USER', 'admin@example.com'))]
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', 'noreply@rbtrading.com')

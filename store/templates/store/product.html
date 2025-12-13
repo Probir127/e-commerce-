@@ -119,14 +119,114 @@
         font-size: 18px;
     }
 
+    /* ===== RESPONSIVE STYLES ===== */
+
+    /* Tablet and below */
     @media (max-width: 768px) {
+        .product-container {
+            padding: 30px 0;
+        }
+
         .product-detail {
             grid-template-columns: 1fr;
-            gap: 40px;
+            gap: 30px;
         }
 
         .product-image-section {
-            padding: 10px;
+            padding: 15px;
+        }
+
+        .product-info h1 {
+            font-size: 28px;
+        }
+
+        .product-price {
+            font-size: 32px;
+        }
+
+        .old-price {
+            font-size: 20px;
+        }
+
+        .product-description {
+            font-size: 15px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-lg {
+            width: 100%;
+            padding: 16px 24px;
+        }
+    }
+
+    /* Mobile Small */
+    @media (max-width: 480px) {
+        .product-container {
+            padding: 20px 0;
+        }
+
+        .product-detail {
+            gap: 20px;
+        }
+
+        .product-info h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .product-meta {
+            font-size: 13px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .product-meta span {
+            margin-left: 0 !important;
+        }
+
+        .product-price {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .old-price {
+            font-size: 18px;
+        }
+
+        .product-description {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .quantity-selector {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .quantity-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+        }
+
+        .quantity-input {
+            width: 80px;
+            font-size: 18px;
+        }
+
+        .btn-lg {
+            padding: 14px 20px;
+            font-size: 16px;
+        }
+
+        /* Related products on mobile */
+        .related-section h2 {
+            font-size: 22px !important;
+            margin-bottom: 20px !important;
         }
     }
 </style>
@@ -218,7 +318,7 @@
             <div class="card">
                 <!-- Badge -->
                 {% if item.has_discount %}
-                <div class="badge">-{{ item.discount_percentage|floatformat:0 }}%</div>
+                <div class="overlay-badge">-{{ item.discount_percentage|floatformat:0 }}%</div>
                 {% endif %}
 
                 <a href="{% url 'product' %}?id={{ item.id }}" class="product-image-wrapper">

@@ -21,10 +21,13 @@
 
     .slide {
         position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         opacity: 0;
-        transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        visibility: hidden;
+        transition: opacity 0.8s ease-in-out, visibility 0.8s;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -33,6 +36,7 @@
 
     .slide.active {
         opacity: 1;
+        visibility: visible;
         z-index: 2;
     }
 
@@ -250,8 +254,9 @@
         {% for product in featured_products %}
         <div class="card">
             <!-- Badge -->
+            <!-- Badge -->
             {% if product.has_discount %}
-            <div class="badge">-{{ product.discount_percentage|floatformat:0 }}%</div>
+            <div class="overlay-badge">-{{ product.discount_percentage|floatformat:0 }}%</div>
             {% endif %}
 
             <!-- Image -->

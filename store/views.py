@@ -1,10 +1,12 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.core.mail import send_mail
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
+from .forms import CheckoutForm, RegisterForm
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
@@ -195,7 +197,7 @@ def register_view(request):
         return redirect('index')
     
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
@@ -204,7 +206,7 @@ def register_view(request):
         else:
             messages.error(request, 'Please correct the errors below')
     else:
-        form = UserCreationForm()
+        form = RegisterForm()
     
     return render(request, 'store/register.html', {'form': form})
 
@@ -219,7 +221,7 @@ def logout_view(request):
 
 @login_required
 def checkout(request):
-    """Render payment selection page"""
+    """Collection shipping address"""
     cart_items = CartItem.objects.filter(user=request.user)
     
     if not cart_items.exists():
@@ -228,10 +230,108 @@ def checkout(request):
     
     total = sum(item.subtotal for item in cart_items)
     
+    if request.method == 'POST':
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            # Save shipping info to session
+            request.session['shipping_address'] = f"{form.cleaned_data['full_name']}\n{form.cleaned_data['address']}\n{form.cleaned_data['city']}, {form.cleaned_data['state']} {form.cleaned_data['post_code']}\nPhone: {form.cleaned_data['phone']}"
+            return redirect('payment_selection')
+    else:
+        # Pre-fill with user data if available
+        initial_data = {
+            'full_name': request.user.first_name + ' ' + request.user.last_name if request.user.first_name else '',
+            'email': request.user.email
+        }
+        form = CheckoutForm(initial=initial_data)
+        
+    return render(request, 'store/checkout.html', {
+        'form': form,
+        'total': total,
+        'cart_items': cart_items
+    })
+
+@login_required
+def payment_selection(request):
+    """Render payment selection page"""
+    cart_items = CartItem.objects.filter(user=request.user)
+    
+    if not cart_items.exists():
+        return redirect('cart')
+        
+    total = sum(item.subtotal for item in cart_items)
+    
     return render(request, 'store/payment_selection.html', {
         'total': total,
         'cart_items': cart_items
     })
+
+def send_order_confirmation_email(request, order):
+    """Send detailed order confirmation email"""
+    items_list = ""
+    for item in order.items.all():
+        items_list += f"- {item.product.name} x {item.quantity}: Tk {item.price}\n"
+    
+    invoice_url = request.build_absolute_uri(reverse('customer_order_invoice', args=[order.id]))
+    track_url = request.build_absolute_uri(reverse('track_order', args=[order.id]))
+    
+    subject = f'Order Invoice - #{order.id}'
+    message = f"""
+Hi {request.user.username},
+
+Thank you for your order! Here are your order details:
+
+Order ID: #{order.id}
+Date: {order.created_at.strftime('%Y-%m-%d %H:%M')}
+Status: {order.get_status_display()}
+Payment: {order.get_payment_status_display()}
+
+Shipping Address:
+{order.shipping_address}
+
+Items:
+{items_list}
+Total Amount: Tk {order.total}
+
+You can view and print your official invoice here:
+{invoice_url}
+
+Track your order status:
+{track_url}
+
+Thank you for shopping with RB Trading!
+"""
+    # Try to get dynamic settings
+    connection = None
+    from_email = settings.DEFAULT_FROM_EMAIL
+    
+    try:
+        site_settings = SiteSettings.objects.first()
+        if site_settings and site_settings.email_host_user and site_settings.email_host_password:
+            from django.core.mail.backends.smtp.EmailBackend import EmailBackend
+            connection = EmailBackend(
+                host=settings.EMAIL_HOST,
+                port=settings.EMAIL_PORT,
+                username=site_settings.email_host_user,
+                password=site_settings.email_host_password,
+                use_tls=settings.EMAIL_USE_TLS,
+                fail_silently=False
+            )
+            from_email = site_settings.email_host_user
+    except Exception as e:
+        print(f"Using default email settings. Dynamic config error: {e}")
+
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=[request.user.email, settings.ADMINS[0][1]],
+            connection=connection, # Use custom connection if available
+            fail_silently=False,
+        )
+        print(f"SUCCESS: Email sent to {request.user.email}")
+    except Exception as e:
+        print(f"FAILURE: Email sending failed: {e}")
 
 @login_required
 def process_payment(request):
@@ -247,11 +347,14 @@ def process_payment(request):
         
     total = sum(item.subtotal for item in cart_items)
     
+    
     # Create order
+    shipping_address = request.session.get('shipping_address', 'Address not provided')
+    
     order = Order.objects.create(
         user=request.user,
         total=total,
-        shipping_address='Pending', # In a real app, you'd collect this earlier
+        shipping_address=shipping_address,
         status='pending',
         payment_status='pending'
     )
@@ -273,17 +376,8 @@ def process_payment(request):
         # Clear cart
         cart_items.delete()
         
-        # Send confirmation email for COD
-        try:
-            send_mail(
-                subject=f'Order Received - #{order.id}',
-                message=f'Hi {request.user.username},\n\nYour order #{order.id} has been placed successfully. Payment method: Cash on Delivery.\nTotal: Tk {order.total}\n\nThank you for shopping with us!',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[request.user.email, settings.ADMINS[0][1]],
-                fail_silently=True,
-            )
-        except Exception:
-            pass # Fail silently if email is not configured properly
+        # Send confirmation email
+        send_order_confirmation_email(request, order)
         
         messages.success(request, 'Order placed successfully! Please pay on delivery.')
         return redirect(f"{reverse('payment_success')}?order_id={order.id}")
@@ -335,16 +429,7 @@ def payment_success(request):
             order.payment_status = 'paid'
             
             # Send confirmation email for Stripe
-            try:
-                send_mail(
-                    subject=f'Payment Received - Order #{order.id}',
-                    message=f'Hi {request.user.username},\n\nYour payment for Order #{order.id} was successful.\nTotal: Tk {order.total}\n\nThank you for shopping with us!',
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[request.user.email, settings.ADMINS[0][1]],
-                    fail_silently=True,
-                )
-            except Exception:
-                pass
+            send_order_confirmation_email(request, order)
             
         order.status = 'processing'
         order.save()
@@ -378,12 +463,22 @@ def payment_cancel(request):
 @login_required
 def profile(request):
     """User profile and order history"""
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    # Only show orders that haven't been 'cleared' by the customer
+    orders = Order.objects.filter(user=request.user, visible_to_customer=True).order_by('-created_at')
     context = {
         'orders': orders,
         'user': request.user
     }
     return render(request, 'store/profile.html', context)
+
+@login_required
+def clear_history(request):
+    """Soft delete all order history for the user"""
+    if request.method == 'POST':
+        # Hide all orders for this user from their view
+        Order.objects.filter(user=request.user).update(visible_to_customer=False)
+        messages.success(request, 'Order history cleared successfully.')
+    return redirect('profile')
 
 from django.contrib.admin.views.decorators import staff_member_required
 
@@ -424,3 +519,21 @@ def cancel_order(request, order_id):
         messages.error(request, 'Order cannot be cancelled at this stage.')
         
     return redirect('profile')
+
+@login_required
+def track_order(request, order_id):
+    """Track order status and timeline"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Calculate progress for timeline
+    steps = ['pending', 'processing', 'shipped', 'delivered']
+    current_step_index = 0
+    if order.status in steps:
+        current_step_index = steps.index(order.status)
+        
+    context = {
+        'order': order,
+        'current_step_index': current_step_index,
+        'steps': steps
+    }
+    return render(request, 'store/track_order.html', context)
