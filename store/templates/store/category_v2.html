@@ -1,0 +1,370 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - RB Trading</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --secondary-color: #3498db;
+            --light-color: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .logo span {
+            color: var(--accent-color);
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .container {
+            display: flex;
+            padding: 30px 5%;
+            gap: 30px;
+        }
+
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .filter-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .filter-section a {
+            display: block;
+            padding: 8px 0;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .filter-section a:hover {
+            color: var(--accent-color);
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        .search-bar {
+            margin-bottom: 30px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .product-category {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .product-price {
+            font-size: 24px;
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: #c0392b;
+        }
+
+        .filter-section input[type="text"],
+        .filter-section input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .filter-section button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .filter-section button:hover {
+            background-color: #c0392b;
+        }
+
+        .filter-section .clear-filter {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: 700;
+            font-size: 14px;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-brand {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 5px;
+            font-style: italic;
+        }
+
+        .price-container {
+            margin-bottom: 15px;
+        }
+
+        .original-price {
+            font-size: 16px;
+            color: #999;
+            text-decoration: line-through;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 30px 5%;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">RB <span>Trading</span></div>
+        <nav class="nav-links">
+            <a href="{% url 'index' %}">Home</a>
+            <a href="{% url 'category' %}">Products</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'cart' %}">Cart</a>
+            <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="filter-section">
+                <h3>Categories</h3>
+                <a href="{% url 'category' %}">All Products</a>
+                {% for cat in categories %}
+                <a href="{% url 'category' %}?category={{ cat.slug }}">{{ cat.name }}</a>
+                {% endfor %}
+            </div>
+
+            <div class="filter-section">
+                <h3>Brands</h3>
+                <a
+                    href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}">All
+                    Brands</a>
+                {% for brand in brands %}
+                {% if selected_brand == brand %}
+                <a href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}brand={{ brand }}"
+                    style="color: var(--accent-color); font-weight: bold;">
+                    {{ brand }}
+                </a>
+                {% else %}
+                <a
+                    href="?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}brand={{ brand }}">
+                    {{ brand }}
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="filter-section">
+                <h3>Price Range</h3>
+                <form method="get">
+                    {% if request.GET.category %}
+                    <input type="hidden" name="category" value="{{ request.GET.category }}">
+                    {% endif %}
+                    {% if request.GET.brand %}
+                    <input type="hidden" name="brand" value="{{ request.GET.brand }}">
+                    {% endif %}
+                    <input type="number" name="min_price" placeholder="Min Price" value="{{ min_price }}" step="0.01"
+                        min="0">
+                    <input type="number" name="max_price" placeholder="Max Price" value="{{ max_price }}" step="0.01"
+                        min="0">
+                    <button type="submit">Apply Filter</button>
+                    {% if min_price or max_price %}
+                    <a href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}{% if request.GET.brand %}{% if request.GET.category %}&{% else %}?{% endif %}brand={{ request.GET.brand }}{% endif %}"
+                        class="clear-filter">Clear Price Filter</a>
+                    {% endif %}
+                </form>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="search-bar">
+                <form method="get">
+                    <input type="text" name="search" placeholder="Search products..." value="{{ request.GET.search }}">
+                </form>
+            </div>
+
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    {% if product.has_discount %}
+                    <div class="discount-badge">-{{ product.discount_percentage|floatformat:0 }}%</div>
+                    {% endif %}
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                    {% else %}
+                    <img src="{% static 'store/image/placeholder.png' %}" alt="{{ product.name }}"
+                        class="product-image">
+                    {% endif %}
+                    <div class="product-info">
+                        <div class="product-name">{{ product.name }}</div>
+                        {% if product.brand %}
+                        <div class="product-brand">Brand: {{ product.brand }}</div>
+                        {% endif %}
+                        <div class="product-category">{{ product.category.name }}</div>
+                        <div class="price-container">
+                            {% if product.has_discount %}
+                            <span class="original-price">Tk {{ product.price }}</span>
+                            <span class="product-price">Tk {{ product.discounted_price|floatformat:2 }}</span>
+                            {% else %}
+                            <span class="product-price">Tk {{ product.price }}</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'product' %}?id={{ product.id }}" class="btn">View Details</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No products found.</p>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 RB Trading. All Rights Reserved.</p>
+    </footer>
+</body>
+
+</html>

@@ -1,0 +1,300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{{ product.name }} - RB Trading</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .logo span {
+            color: var(--accent-color);
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        .container {
+            padding: 40px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-bottom: 50px;
+        }
+
+        .product-image-section img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .product-info h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .product-category {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .product-price {
+            font-size: 36px;
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .product-description {
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .quantity-selector button {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .quantity-selector input {
+            width: 60px;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background-color: #c0392b;
+        }
+
+        .related-products {
+            margin-top: 60px;
+        }
+
+        .related-products h2 {
+            margin-bottom: 30px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product-card-info {
+            padding: 15px;
+        }
+
+        .product-card-name {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .product-card-price {
+            color: var(--accent-color);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 30px 5%;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">RB <span>Trading</span></div>
+        <nav class="nav-links">
+            <a href="{% url 'index' %}">Home</a>
+            <a href="{% url 'category' %}">Products</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'cart' %}">Cart</a>
+            <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="product-detail">
+            <div class="product-image-section">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                <img src="{% static 'store/image/placeholder.png' %}" alt="{{ product.name }}">
+                {% endif %}
+            </div>
+
+            <div class="product-info">
+                <h1>{{ product.name }}</h1>
+                <div class="product-category">Category: {{ product.category.name }}</div>
+                <div class="product-price">Tk {{ product.price }}</div>
+                <div class="product-description">
+                    {{ product.description }}
+                </div>
+
+                <div class="quantity-selector">
+                    <button onclick="decreaseQuantity()">-</button>
+                    <input type="number" id="quantity" value="1" min="1">
+                    <button onclick="increaseQuantity()">+</button>
+                </div>
+
+                {% if user.is_authenticated %}
+                <button class="btn" onclick="addToCart()">Add to Cart</button>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn">Login to Purchase</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if related_products %}
+        <div class="related-products">
+            <h2>Related Products</h2>
+            <div class="products-grid">
+                {% for rel_product in related_products %}
+                <div class="product-card">
+                    {% if rel_product.image %}
+                    <img src="{{ rel_product.image.url }}" alt="{{ rel_product.name }}">
+                    {% else %}
+                    <img src="{% static 'store/image/placeholder.png' %}" alt="{{ rel_product.name }}">
+                    {% endif %}
+                    <div class="product-card-info">
+                        <div class="product-card-name">{{ rel_product.name }}</div>
+                        <div class="product-card-price">Tk {{ rel_product.price }}</div>
+                        <a href="{% url 'product' %}?id={{ rel_product.id }}" class="btn"
+                            style="margin-top: 10px; display: block; text-align: center; padding: 8px;">View</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <footer>
+        <p>&copy; 2025 RB Trading. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        function increaseQuantity() {
+            const input = document.getElementById('quantity');
+            input.value = parseInt(input.value) + 1;
+        }
+
+        function decreaseQuantity() {
+            const input = document.getElementById('quantity');
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+
+        function addToCart() {
+            const quantity = document.getElementById('quantity').value;
+            const csrftoken = document.querySelector('[name=csrf-token]').content;
+
+            fetch('{% url "add_to_cart" product.id %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ quantity: quantity })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                    } else {
+                        alert('Error adding to cart');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error adding to cart');
+                });
+        }
+    </script>
+</body>
+
+</html>
