@@ -1,8 +1,20 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
-from .models import Category, Product, CartItem, Order, OrderItem, SiteSettings
+from .models import Category, Product, CartItem, Order, OrderItem, SiteSettings, Brand, FinancialReport, AccountingEntry
 from django.utils.safestring import mark_safe
+from django.db.models import Sum, F
+from django.db.models.functions import TruncDate
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+import datetime
+from django.utils import timezone
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug']
+    prepopulated_fields = {'slug': ('name',)}
+    search_fields = ['name']
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
@@ -32,11 +44,11 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['image_preview', 'name', 'category', 'price', 'discounted_price_display', 'stock_status', 'available', 'featured', 'created_at']
+    list_display = ['image_preview', 'name', 'category', 'brand', 'price', 'discounted_price_display', 'stock_status', 'available', 'featured', 'created_at']
     list_filter = ['available', 'featured', 'category', 'brand', 'created_at']
     list_editable = ['price', 'available', 'featured']
     prepopulated_fields = {'slug': ('name',)}
-    search_fields = ['name', 'description']
+    search_fields = ['name', 'description', 'brand__name']
     date_hierarchy = 'created_at'
     actions = ['make_unavailable', 'make_available', 'apply_10_percent_discount', 'remove_discount']
     list_per_page = 20
@@ -142,7 +154,7 @@ class OrderAdmin(admin.ModelAdmin):
     payment_status_badge.short_description = "Payment"
 
     def invoice_link(self, obj):
-        url = reverse('admin_order_invoice', args=[obj.id])
+        url = reverse('store:admin_order_invoice', args=[obj.id])
         return mark_safe(f'<a href="{url}" class="button" target="_blank">Print Invoice</a>')
     invoice_link.short_description = "Actions"
 
@@ -165,6 +177,106 @@ class OrderAdmin(admin.ModelAdmin):
     def short_address(self, obj):
         return format_html('<span style="white-space: pre-wrap;">{}</span>', obj.shipping_address)
     short_address.short_description = "Shipping Address"
+
+@admin.register(AccountingEntry)
+class AccountingEntryAdmin(admin.ModelAdmin):
+    list_display = ['date', 'description', 'entry_type', 'amount', 'related_order']
+    list_filter = ['entry_type', 'date']
+    search_fields = ['description', 'amount']
+    date_hierarchy = 'date'
+    ordering = ['-date']
+
+@admin.register(FinancialReport)
+class FinancialReportAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/financial_dashboard.html'
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        from django.urls import path
+        custom_urls = [
+            path('add-transaction/', self.admin_site.admin_view(self.add_transaction_view), name='financial_add_transaction'),
+        ]
+        return custom_urls + urls
+
+    def add_transaction_view(self, request):
+        from .forms import AccountingEntryForm
+        from django.shortcuts import render, redirect
+        from django.contrib import messages
+        
+        if request.method == 'POST':
+            form = AccountingEntryForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Transaction added successfully.')
+                return redirect('admin:store_financialreport_changelist')
+        else:
+            form = AccountingEntryForm()
+            
+        context = {
+            'form': form,
+            'title': 'Add Transaction',
+            'site_header': self.admin_site.site_header,
+            'site_title': self.admin_site.site_title,
+            'has_permission': True,
+        }
+        return render(request, 'admin/add_transaction_custom.html', context)
+
+    def changelist_view(self, request, extra_context=None):
+        # Aggregate logic from Ledger (AccountingEntry)
+        entries = AccountingEntry.objects.all()
+        
+        # FILTERING LOGIC
+        days_param = request.GET.get('days', '30') # Default 30
+        if days_param == '7':
+            days_filter = 7
+        elif days_param == '30':
+            days_filter = 30
+        else:
+            days_filter = 30 # Default/Fallback
+            
+        cutoff_date = timezone.now() - datetime.timedelta(days=days_filter)
+        
+        # Filter relevant querysets
+        filtered_entries = entries.filter(date__gte=cutoff_date)
+        
+        income = filtered_entries.filter(entry_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
+        expenses = filtered_entries.filter(entry_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        net_profit = income - expenses
+        
+        # Cash Flow is always 30 days usually, but let's make it match the filter for consistency
+        monthly_cashflow = income - expenses
+
+        # Daily Revenue data for chart
+        daily_data = filtered_entries.filter(entry_type='income')\
+            .annotate(day=TruncDate('date'))\
+            .values('day')\
+            .annotate(revenue=Sum('amount'))\
+            .order_by('day')
+            
+        daily_labels = []
+        daily_revenue = []
+        
+        for entry in daily_data:
+            daily_labels.append(entry['day'].strftime('%Y-%m-%d'))
+            daily_revenue.append(float(entry['revenue']))
+            
+        context = {
+            'total_revenue': income, 
+            'total_expenses': expenses,
+            'net_profit': net_profit,
+            'monthly_cashflow': monthly_cashflow,
+            'recent_entries': entries.order_by('-date')[:10], # Keep recent entries global or filtered? Global is better for context.
+            'daily_labels': json.dumps(daily_labels, cls=DjangoJSONEncoder),
+            'daily_revenue': json.dumps(daily_revenue, cls=DjangoJSONEncoder),
+            'days_filter': days_param, # To highlight active button
+            # PASS THE CUSTOM ADD URL
+            'add_url': reverse('admin:financial_add_transaction'),
+        }
+        return super().changelist_view(request, extra_context=context)
+    
+    def has_add_permission(self, request):
+        return False
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):

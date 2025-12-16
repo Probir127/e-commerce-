@@ -235,7 +235,8 @@
 <div class="container cart-container">
     <div class="cart-header">
         <h1>Shopping Cart</h1>
-        <a href="{% url 'category' %}" style="color: var(--accent-color); font-weight: 500; text-decoration: none;">
+        <a href="{% url 'store:category' %}"
+            style="color: var(--accent-color); font-weight: 500; text-decoration: none;">
             <i class="fas fa-arrow-left"></i> Continue Shopping
         </a>
     </div>
@@ -258,7 +259,7 @@
                     <tr id="cart-item-{{ item.id }}">
                         <td data-label="Product">
                             <div class="cart-item-info">
-                                <a href="{% url 'product' %}?id={{ item.product.id }}">
+                                <a href="{% url 'store:product' %}?id={{ item.product.id }}">
                                     {% if item.product.image %}
                                     <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
                                         class="cart-item-img">
@@ -267,8 +268,8 @@
                                         class="cart-item-img">
                                     {% endif %}
                                 </a>
-                                <div><a href="{% url 'product' %}?id={{item.product.id}}"
-                                        class="item-name">{{item.product.name}}</a>
+                                <div><a href="{% url 'store:product' %}?id={{item.product.id}}"
+                                        class="item-name">{{item.product.name|truncatechars:30}}</a>
                                     <span class="item-category">{{ item.product.category.name }}</span>
                                 </div>
                             </div>
@@ -285,17 +286,21 @@
                         </td>
                         <td data-label="Quantity">
                             <div class="quantity-control">
-                                <button class="qty-btn" onclick="updateQuantity({{ item.id }}, -1)">-</button>
+                                <button class="qty-btn"
+                                    onclick="updateQuantity({{ item.id }}, '{% url 'store:update_cart' item.id %}', -1)">-</button>
                                 <input type="text" id="qty-{{ item.id }}" class="qty-input" value="{{ item.quantity }}"
                                     readonly>
-                                <button class="qty-btn" onclick="updateQuantity({{ item.id }}, 1)">+</button>
+                                <button class="qty-btn"
+                                    onclick="updateQuantity({{ item.id }}, '{% url 'store:update_cart' item.id %}', 1)">+</button>
                             </div>
                         </td>
                         <td data-label="Subtotal" class="price-text">
                             Tk {{ item.subtotal|floatformat:2 }}
                         </td>
                         <td data-label="Action" style="text-align: right;">
-                            <button class="remove-btn" onclick="removeItem({{ item.id }})" title="Remove Item">
+                            <button class="remove-btn"
+                                onclick="removeItem({{ item.id }}, '{% url 'store:remove_from_cart' item.id %}')"
+                                title="Remove Item">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </td>
@@ -320,7 +325,7 @@
                 <span id="total">Tk {{ total|floatformat:2 }}</span>
             </div>
 
-            <a href="{% url 'checkout' %}" class="btn btn-primary checkout-btn">
+            <a href="{% url 'payment:checkout' %}" class="btn btn-primary checkout-btn">
                 Proceed to Checkout <i class="fas fa-lock" style="margin-left: 10px; font-size: 14px;"></i>
             </a>
 
@@ -335,7 +340,7 @@
         <h2 style="margin-bottom: 15px;">Your cart is empty</h2>
         <p style="color: var(--text-muted); margin-bottom: 30px;">Looks like you haven't added any items to your cart
             yet.</p>
-        <a href="{% url 'category' %}" class="btn btn-primary">Start Shopping</a>
+        <a href="{% url 'store:category' %}" class="btn btn-primary">Start Shopping</a>
     </div>
     {% endif %}
 </div>
@@ -343,7 +348,7 @@
 
 {% block extra_js %}
 <script>
-    function updateQuantity(itemId, change) {
+    function updateQuantity(itemId, url, change) {
         const qtyInput = document.getElementById(`qty-${itemId}`);
         let currentQty = parseInt(qtyInput.value);
         let newQty = currentQty + change;
@@ -353,10 +358,10 @@
         // Visual feedback
         qtyInput.style.color = '#ccc';
 
-        fetch(`/update-cart/${itemId}/`, {
+        fetch(url, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: `quantity=${newQty}`
@@ -376,16 +381,16 @@
             });
     }
 
-    function removeItem(itemId) {
+    function removeItem(itemId, url) {
         if (!confirm('Are you sure you want to remove this item?')) return;
 
         const row = document.getElementById(`cart-item-${itemId}`);
         if (row) row.style.opacity = '0.5';
 
-        fetch(`/remove-from-cart/${itemId}/`, {
+        fetch(url, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: `quantity=0`

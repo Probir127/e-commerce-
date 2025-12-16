@@ -20,7 +20,7 @@
     <!-- Header -->
     <header>
         <div class="container">
-            <a href="{% url 'index' %}" class="logo">RB <span>Trading</span></a>
+            <a href="{% url 'store:index' %}" class="logo">RB <span>Trading</span></a>
 
             <!-- Mobile Menu Button -->
             <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
@@ -28,17 +28,14 @@
             </button>
 
             <nav class="nav-links" id="navLinks">
-                <a href="{% url 'index' %}"
-                    class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                    Home
-                </a>
-                <a href="{% url 'category' %}"
-                    class="{% if request.resolver_match.url_name == 'category' %}active{% endif %}">
-                    Shop
-                </a>
+                <a href="{% url 'store:index' %}"
+                    class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Home</a>
+                <a href="{% url 'store:category' %}"
+                    class="{% if request.resolver_match.url_name == 'category' %}active{% endif %}">Shop</a>
 
                 {% if user.is_authenticated %}
-                <a href="{% url 'cart' %}" class="{% if request.resolver_match.url_name == 'cart' %}active{% endif %}">
+                <a href="{% url 'store:cart' %}"
+                    class="{% if request.resolver_match.url_name == 'cart' %}active{% endif %}">
                     <i class="fa-solid fa-cart-shopping"></i> Cart
                     <span id="cart-count">
                         {% with cart_count=user.cart_items.count %}
@@ -48,15 +45,15 @@
                 </a>
 
                 <div class="nav-actions">
-                    <a href="{% url 'profile' %}" style="font-weight: 600;">Profile</a>
-                    <a href="{% url 'logout' %}" class="btn btn-sm btn-outline">
+                    <a href="{% url 'accounts:profile' %}" style="font-weight: 600;">Profile</a>
+                    <a href="{% url 'accounts:logout' %}" class="btn btn-sm btn-outline">
                         Logout
                     </a>
                 </div>
                 {% else %}
                 <div class="nav-actions">
-                    <a href="{% url 'login' %}" style="font-weight: 600;">Login</a>
-                    <a href="{% url 'register' %}" class="btn btn-sm btn-primary">Sign Up</a>
+                    <a href="{% url 'accounts:login' %}" style="font-weight: 600;">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-sm btn-primary">Sign Up</a>
                 </div>
                 {% endif %}
             </nav>
@@ -102,23 +99,23 @@
                 </div>
                 <div class="footer-col">
                     <h3>Quick Links</h3>
-                    <a href="{% url 'index' %}">Home</a>
-                    <a href="{% url 'category' %}">All Products</a>
+                    <a href="{% url 'store:index' %}">Home</a>
+                    <a href="{% url 'store:category' %}">All Products</a>
                     {% if user.is_authenticated %}
-                    <a href="{% url 'cart' %}">Cart</a>
-                    <a href="{% url 'profile' %}">Profile</a>
-                    <a href="{% url 'logout' %}">Logout</a>
+                    <a href="{% url 'store:cart' %}">Cart</a>
+                    <a href="{% url 'accounts:profile' %}">Profile</a>
+                    <a href="{% url 'accounts:logout' %}">Logout</a>
                     {% else %}
                     <a href="#">About Us</a>
                     <a href="#">Contact</a>
                     {% endif %}
                 </div>
                 <div class="footer-col">
-                    <h3>Customer Service</h3>
-                    <a href="#">Shipping Policy</a>
-                    <a href="#">Returns & Refunds</a>
-                    <a href="#">FAQ</a>
-                    <a href="#">Terms of Service</a>
+                    <h3>Top Categories</h3>
+                    {% for cat in nav_categories|slice:":5" %}
+                    <a href="{% url 'store:category' %}?category={{ cat.slug }}">{{ cat.name }}</a>
+                    {% endfor %}
+                    <a href="{% url 'store:category' %}">View All</a>
                 </div>
                 <div class="footer-col">
                     <h3>Connect</h3>
@@ -202,6 +199,26 @@
             });
         });
     </script>
+
+    <!-- CSRF Token Helper -->
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
 
     {% block extra_js %}{% endblock %}
 </body>

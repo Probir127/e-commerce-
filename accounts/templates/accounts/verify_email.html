@@ -1,0 +1,236 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - RB Trading</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --input-bg: #f5f7fa;
+            --text-color: #2d3748;
+            --accent-color: #764ba2;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-wrapper {
+            width: 100%;
+            max-width: 420px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .auth-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .logo span {
+            color: var(--accent-color);
+        }
+
+        .auth-header h2 {
+            font-size: 24px;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            font-size: 14px;
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        .auth-header .email {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #718096;
+            margin-left: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background-color: var(--input-bg);
+            font-size: 20px;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            letter-spacing: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background-color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
+        }
+
+        .alerts {
+            margin-bottom: 20px;
+        }
+
+        .alert-item {
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-error {
+            background-color: #fff5f5;
+            color: #c53030;
+            border-left: 4px solid #c53030;
+        }
+
+        .alert-success {
+            background-color: #f0fff4;
+            color: #2f855a;
+            border-left: 4px solid #2f855a;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary-gradient);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.3);
+        }
+
+        .help-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #718096;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon-email {
+            font-size: 48px;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo">RB <span>Trading</span></div>
+                <i class="fas fa-envelope-open icon-email"></i>
+                <h2>Verify Your Email</h2>
+                <p>We sent a 6-digit code to<br><span class="email">{{ email }}</span></p>
+            </div>
+
+            {% if messages %}
+            <div class="alerts">
+                {% for message in messages %}
+                <div class="alert-item alert-{{ message.tags }}">
+                    <i class="fas fa-info-circle"></i> {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="code">Verification Code</label>
+                    <input type="text" name="code" id="code" placeholder="000000" maxlength="6" pattern="\d{6}" required
+                        autofocus>
+                </div>
+
+                <button type="submit" class="btn-submit">Verify & Activate</button>
+            </form>
+
+            <div class="help-text">
+                <i class="fas fa-clock"></i> Code expires in 10 minutes<br>
+                Didn't receive the code? <a href="{% url 'accounts:register' %}"
+                    style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Register again</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

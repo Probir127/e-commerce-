@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - RB Trading</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 15px;
+            padding: 50px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .success-icon::after {
+            content: "✓";
+            font-size: 60px;
+            color: white;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .order-details {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .order-details p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .order-details strong {
+            color: #2c3e50;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="success-container">
+        <div class="success-icon"></div>
+        <h1>Payment Successful!</h1>
+        <p style="font-size: 18px; margin-bottom: 20px;">Thank you for your purchase!</p>
+
+        <div class="order-details">
+            <p><strong>Order Number:</strong> #{{ order.id }}</p>
+            <p><strong>Total Amount:</strong> Tk {{ order.total }}</p>
+            <p><strong>Payment Status:</strong> {{ order.get_payment_status_display }}</p>
+            <p><strong>Order Status:</strong> {{ order.get_status_display }}</p>
+            <p><strong>Order Date:</strong> {{ order.created_at|date:"F d, Y \a\t h:i A" }}</p>
+        </div>
+
+        <p style="color: #666; margin-bottom: 20px;">
+            A confirmation email has been sent to your email address.
+        </p>
+
+        <div class="action-buttons" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+            <a href="{% url 'accounts:customer_order_invoice' order.id %}" target="_blank" class="btn"
+                style="background-color: #34495e;">
+                Print Invoice
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="btn">Go to Profile</a>
+        </div>
+    </div>
+</body>
+
+</html>

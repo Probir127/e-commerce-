@@ -20,7 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Login URL configuration
-LOGIN_URL = 'login'
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'store:index'
+LOGOUT_REDIRECT_URL = 'store:index'
 
 
 # Quick-start development settings - unsuitable for production
@@ -33,9 +35,22 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-+d#ly@uf_k2)+64=sw^ol(1@&+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*', '.ngrok-free.dev']
+ALLOWED_HOSTS = ['*', '.ngrok-free.dev', '.ngrok-free.app', '.ngrok.io']
 
-CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.dev', 
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.io'
+]
+
+# Essential for ngrok/proxies: Trust X-Forwarded-Proto header to know we are on HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Cookie settings - Relaxed for Development/Ngrok compatibility
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+# CSRF_COOKIE_SAMESITE = 'None'  <-- Removed to allow default (Lax) behavior
+# SESSION_COOKIE_SAMESITE = 'None'
 
 
 # Application definition
@@ -49,6 +64,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'store',
+    'accounts',
+    'payment',
 ]
 
 JAZZMIN_SETTINGS = {
@@ -66,7 +83,7 @@ JAZZMIN_SETTINGS = {
     "login_background_image": "store/image/Oneplus-Ace-2V-.jpg",
     "topmenu_links": [
         {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "View Site", "url": "index", "new_window": True},
+        {"name": "View Site", "url": "store:index", "new_window": True},
     ],
     "show_sidebar": True,
     "navigation_expanded": True,
@@ -143,6 +160,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'store.context_processors.global_store_data', # Custom
             ],
         },
     },
@@ -196,10 +214,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (User uploads)
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
@@ -207,11 +227,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Stripe Configuration
-# For testing, use test keys from https://dashboard.stripe.com/test/apikeys
-STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', 'pk_test_51QTdIEP2aBRtBGlVxFHqJ8example')
-STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51QTdIEP2aBRtBGlVxFHqJ8example')
-STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')  # Optional: for webhook verification
+# SSLCommerz Configuration (Bangladesh Payment Gateway)
+# Sandbox credentials for testing - replace with production credentials
+SSLCOMMERZ_STORE_ID = os.getenv('SSLCOMMERZ_STORE_ID', 'testbox')
+SSLCOMMERZ_STORE_PASS = os.getenv('SSLCOMMERZ_STORE_PASS', 'qwerty')
+SSLCOMMERZ_IS_SANDBOX = True  # Set to False for production
 
 # Email Configuration
 # Email Configuration

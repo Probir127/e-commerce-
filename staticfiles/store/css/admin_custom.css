@@ -1,0 +1,48 @@
+/* Force background image on login page */
+body.login-page {
+    background-image: url('/static/store/image/admin_login_bg.png') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    min-height: 100vh;
+}
+
+/* Style the login card */
+.login-box,
+.register-box {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+    margin-top: 5vh;
+    /* Move it up a bit */
+}
+
+/* Hide or resize the huge user icon on 'Not Authorized' screen */
+.login-box .card-body .text-center img {
+    width: 80px !important;
+    height: 80px !important;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    object-fit: cover;
+}
+
+/* Better typography */
+.login-box-msg {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1.1em;
+    color: #333;
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: #4b0082 !important;
+    /* Indigo */
+    border-color: #4b0082 !important;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #3a0063 !important;
+    transform: translateY(-1px);
+}

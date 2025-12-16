@@ -198,21 +198,21 @@
 <!-- Hero Slider -->
 <section class="hero-slider">
     <div class="slider-container">
-        {% for product in featured_products %}
+        {% for product in slider_products %}
         <div class="slide {% if forloop.first %}active{% endif %}">
             <div class="slide-background">
                 {% if product.image %}
                 <img src="{{ product.image.url }}" alt="{{ product.name }}">
                 {% else %}
-                <img src="{% static 'store/image/samsung1.png' %}" alt="{{ product.name }}">
+                <img src="{% static 'store/image/placeholder.png' %}" alt="{{ product.name }}">
                 {% endif %}
             </div>
             <div class="slide-content">
-                <h1>{{ product.name }}</h1>
+                <h1>{{ product.name|truncatewords:6 }}</h1>
                 <p>{{ product.description|truncatewords:20 }}</p>
                 <div class="slide-price">Tk {{ product.discounted_price|floatformat:0 }}</div>
                 <div style="display: flex; gap: 15px; justify-content: center;">
-                    <a href="{% url 'product' %}?id={{ product.id }}" class="btn btn-primary"
+                    <a href="{% url 'store:product' %}?id={{ product.id }}" class="btn btn-primary"
                         style="padding: 12px 35px; font-size: 16px;">
                         Shop Now
                     </a>
@@ -225,18 +225,17 @@
             <div class="slide-content">
                 <h1>Welcome to RB Trading</h1>
                 <p>Best Electronics at Best Prices</p>
-                <a href="{% url 'category' %}" class="btn btn-primary">Browse Shop</a>
+                <a href="{% url 'store:category' %}" class="btn btn-primary">Browse Shop</a>
             </div>
         </div>
         {% endfor %}
     </div>
-
-    {% if featured_products %}
+    {% if slider_products %}
     <button class="slider-btn prev" onclick="changeSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
     <button class="slider-btn next" onclick="changeSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
 
     <div class="slider-dots">
-        {% for product in featured_products %}
+        {% for product in slider_products %}
         <span class="dot {% if forloop.first %}active{% endif %}" onclick="currentSlide({{ forloop.counter }})"></span>
         {% endfor %}
     </div>
@@ -244,6 +243,7 @@
 </section>
 
 <!-- Special Offers Section -->
+{% if special_offers %}
 <section class="container" style="padding-bottom: 80px;">
     <div class="section-header">
         <h2 class="section-title">Special Offers</h2>
@@ -251,16 +251,15 @@
     </div>
 
     <div class="products-grid">
-        {% for product in featured_products %}
+        {% for product in special_offers %}
         <div class="card">
-            <!-- Badge -->
             <!-- Badge -->
             {% if product.has_discount %}
             <div class="overlay-badge">-{{ product.discount_percentage|floatformat:0 }}%</div>
             {% endif %}
 
             <!-- Image -->
-            <a href="{% url 'product' %}?id={{ product.id }}" class="product-image-wrapper">
+            <a href="{% url 'store:product' %}?id={{ product.id }}" class="product-image-wrapper">
                 {% if product.image %}
                 <img src="{{ product.image.url }}" alt="{{ product.name }}">
                 {% else %}
@@ -271,7 +270,7 @@
             <!-- Info -->
             <div class="product-details">
                 <h3 class="product-title" title="{{ product.name }}">
-                    <a href="{% url 'product' %}?id={{ product.id }}">{{ product.name }}</a>
+                    <a href="{% url 'store:product' %}?id={{ product.id }}">{{ product.name|truncatechars:40 }}</a>
                 </h3>
 
                 <div class="product-price">
@@ -283,7 +282,7 @@
                     {% endif %}
                 </div>
 
-                <a href="{% url 'product' %}?id={{ product.id }}" class="btn btn-outline" style="width: 100%;">
+                <a href="{% url 'store:product' %}?id={{ product.id }}" class="btn btn-outline" style="width: 100%;">
                     View Details
                 </a>
             </div>
@@ -291,6 +290,7 @@
         {% endfor %}
     </div>
 </section>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

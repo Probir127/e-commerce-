@@ -300,11 +300,12 @@
             <!-- Categories -->
             <div class="filter-section">
                 <h3>Categories</h3>
-                <a href="{% url 'category' %}" class="filter-link {% if not request.GET.category %}active{% endif %}">
+                <a href="{% url 'store:category' %}"
+                    class="filter-link {% if not request.GET.category %}active{% endif %}">
                     All Products
                 </a>
                 {% for cat in categories %}
-                <a href="{% url 'category' %}?category={{ cat.slug }}"
+                <a href="{% url 'store:category' %}?category={{ cat.slug }}"
                     class="filter-link {% if request.GET.category == cat.slug %}active{% endif %}">
                     {{ cat.name }}
                 </a>
@@ -314,7 +315,7 @@
             <!-- Brands -->
             <div class="filter-section">
                 <h3>Brands</h3>
-                <a href="{% url 'category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}"
+                <a href="{% url 'store:category' %}{% if request.GET.category %}?category={{ request.GET.category }}{% endif %}"
                     class="filter-link {% if not request.GET.brand %}active{% endif %}">
                     All Brands
                 </a>
@@ -347,7 +348,7 @@
                     <button type="submit" class="btn btn-primary filter-btn">Apply Filter</button>
 
                     {% if min_price or max_price %}
-                    <a href="{% url 'category' %}?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.brand %}brand={{ request.GET.brand }}{% endif %}"
+                    <a href="{% url 'store:category' %}?{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}{% if request.GET.brand %}brand={{ request.GET.brand }}{% endif %}"
                         class="clear-filter">Clear Price Filter</a>
                     {% endif %}
                 </form>
@@ -381,7 +382,7 @@
                 {% endif %}
 
                 <!-- Image -->
-                <a href="{% url 'product' %}?id={{ product.id }}" class="product-image-wrapper">
+                <a href="{% url 'store:product' %}?id={{ product.id }}" class="product-image-wrapper">
                     {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.name }}">
                     {% else %}
@@ -392,7 +393,7 @@
                 <!-- Info -->
                 <div class="product-details">
                     <h3 class="product-title" title="{{ product.name }}">
-                        <a href="{% url 'product' %}?id={{ product.id }}">{{ product.name }}</a>
+                        <a href="{% url 'store:product' %}?id={{ product.id }}">{{ product.name|truncatechars:40 }}</a>
                     </h3>
 
                     {% if product.brand %}
@@ -408,7 +409,8 @@
                         {% endif %}
                     </div>
 
-                    <a href="{% url 'product' %}?id={{ product.id }}" class="btn btn-outline" style="width: 100%;">
+                    <a href="{% url 'store:product' %}?id={{ product.id }}" class="btn btn-outline"
+                        style="width: 100%;">
                         View Details
                     </a>
                 </div>

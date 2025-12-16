@@ -251,7 +251,7 @@
             <h1>{{ product.name }}</h1>
 
             <div class="product-meta">
-                <span>Category: <a href="{% url 'category' %}?category={{ product.category.slug }}"
+                <span>Category: <a href="{% url 'store:category' %}?category={{ product.category.slug }}"
                         style="color: var(--accent-color);">{{ product.category.name }}</a></span>
                 {% if product.brand %}
                 <span style="margin-left: 15px;">|</span>
@@ -297,7 +297,7 @@
                     <i class="fa-solid fa-cart-shopping" style="margin-right: 10px;"></i> Add to Cart
                 </button>
                 {% else %}
-                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary btn-lg">
+                <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary btn-lg">
                     Login to Purchase
                 </a>
                 {% endif %}
@@ -321,7 +321,7 @@
                 <div class="overlay-badge">-{{ item.discount_percentage|floatformat:0 }}%</div>
                 {% endif %}
 
-                <a href="{% url 'product' %}?id={{ item.id }}" class="product-image-wrapper">
+                <a href="{% url 'store:product' %}?id={{ item.id }}" class="product-image-wrapper">
                     {% if item.image %}
                     <img src="{{ item.image.url }}" alt="{{ item.name }}">
                     {% else %}
@@ -331,7 +331,7 @@
 
                 <div class="product-details">
                     <h3 class="product-title" title="{{ item.name }}">
-                        <a href="{% url 'product' %}?id={{ item.id }}">{{ item.name }}</a>
+                        <a href="{% url 'store:product' %}?id={{ item.id }}">{{ item.name }}</a>
                     </h3>
 
                     <div class="product-price">
@@ -343,7 +343,7 @@
                         {% endif %}
                     </div>
 
-                    <a href="{% url 'product' %}?id={{ item.id }}" class="btn btn-outline" style="width: 100%;">
+                    <a href="{% url 'store:product' %}?id={{ item.id }}" class="btn btn-outline" style="width: 100%;">
                         View Details
                     </a>
                 </div>
@@ -381,10 +381,10 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
         btn.disabled = true;
 
-        fetch('{% url "add_to_cart" product.id %}', {
+        fetch('{% url "store:add_to_cart" product.id %}', {
             method: 'POST',
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ quantity: quantity })
@@ -409,7 +409,7 @@
                         btn.innerHTML = originalText;
                     }, 2000);
                 } else {
-                    alert('Error submitting to cart');
+                    alert(data.message || 'Error submitting to cart');
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                 }
